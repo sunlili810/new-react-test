@@ -1,17 +1,22 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
+import { BrowserRouter } from 'react-router-dom';
+import zhCN from 'antd/lib/locale-provider/zh_CN';
+import { ConfigProvider } from 'antd';
 import App from './App';
-import * as serviceWorker from './serviceWorker';
+// import * as serviceWorker from './serviceWorker';
 
 ReactDOM.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
+  <BrowserRouter basename="">
+    <ConfigProvider locale={zhCN}>
+      <App />
+    </ConfigProvider>
+  </BrowserRouter>,
   document.getElementById('root')
 );
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.
 // Learn more about service workers: https://bit.ly/CRA-PWA
-serviceWorker.unregister();
+// serviceWorker.unregister();

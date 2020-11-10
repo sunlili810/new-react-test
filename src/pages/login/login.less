@@ -1,0 +1,56 @@
+.login{
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  background: url(../../res/images/login-bg.jpg) no-repeat;
+  background-size:100% 100%;
+  display: -webkit-flex;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  .container{
+    width: 480px;
+    .content{
+      background: rgba(195,195,195,.8);
+      padding: 20px 50px;
+      border-radius: 5px;
+      .logo{
+        text-align: center;
+        margin: 20px 0 40px;
+      }
+      .login-form {
+        .ant-input-affix-wrapper .ant-input-prefix{
+          top: 17px;
+        }
+        .login-form-forgot {
+          float: right;
+        }
+        .login-form-button {
+          width: 100%;
+          font-size: 18px;
+        }
+        .ant-input{
+          background-color: #ffffff;
+          border: 0;
+          color: #000000;
+        }
+      }
+    }
+    .text{
+      text-align: center;
+      .line-div{
+        display: inline-block;
+        background: #455154;
+        width: 25%;
+        height: 1px;
+      }
+      .text-comp{
+        display: inline-block;
+        color: #455154;
+        font-size: 14px;
+        margin-top: 70px;
+        width: 50%;
+      }
+    }
+  }
+}

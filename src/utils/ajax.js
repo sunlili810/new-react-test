@@ -3,6 +3,7 @@ import modal from 'components/modal/modal';
 
 let dialogId = 0;
 const baseUrl = window.apiUrl;
+
 export default class AJAX {
   static fetch(options) {
     const {
@@ -19,22 +20,27 @@ export default class AJAX {
     let { data, url } = options;
     const urlFirst = url.split(':')[0];
     url = urlFirst === 'http' ? url : baseUrl + url;
-    if (method.toLowerCase() === 'get') {
-      data = null;
-    }
+    //if (method.toLowerCase() === 'get') {
+    //  data = null;
+    //}
     // else {
     // data = JSON.stringify(data);
     // }
     const tempData = AJAX.isExisty(data) ? data : {};
-    // const tempData2 = { ...tempData, projectid: window.projectid, deveui: window.deveui };
-    const tempData2 = { ...tempData, projectid: localStorage.getItem('PROJECTID') };
+    //const tempData2 = Object.assign({}, tempData, { projectid: window.projectid ,deveui: window.deveui});
+    const tempData2 = Object.assign({}, tempData, { projectid: localStorage.getItem('PROJECTID')});
+
+    const methodData= method === 'get'?{params:{...tempData2}}:{ data: tempData2};
+
     axios({
       method,
       url,
       // headers: { 'Content-Type': 'application/json;charset=UTF-8'},
       // headers: { 'content-type': 'application/x-www-form-urlencoded' },
       withCredentials: true,
-      data: tempData2,
+      //data: tempData2,
+     // params:{...tempData2},
+    ...methodData,
       transformRequest: [function (dataOld) {
         let ret = '';
         for (const it in dataOld) {
@@ -60,18 +66,18 @@ export default class AJAX {
           if (successFn) {
             successFn(response.data);
           }
-        } else if (response.data.result === 1001) {
-          window.location.href = window.routername;
+        } else if(response.data.result === 1001){
+          window.location.href=window.routername;
         } else if (errorFn) {
           errorFn(response.data.errorMsg);
         } else {
-          AJAX.modalError(response.data.errorMsg || response.data.remark);
+          AJAX.modalError(response.data.errorMsg || response.data.detail);
         }
       }).catch((error) => {
         if (errorFn) {
-        // errorFn(error.message);
+          //errorFn(error.message);
         } else {
-        // AJAX.modalError(error.message);
+          //AJAX.modalError(error.message);
         }
         if (loadingFlag) {
           modal.closeModel(dialogId);
@@ -92,8 +98,8 @@ export default class AJAX {
         type: 'loading'
       });
     }
-    // data.append('projectid', localStorage.getItem('PROJECTID'));
-    // data.append('deveui', window.deveui);
+    data.append('projectid', window.projectid);
+    data.append('deveui', window.deveui);
     let { url } = options;
     url = baseUrl + url;
     axios({
@@ -126,6 +132,7 @@ export default class AJAX {
         }
       });
   }
+
 
   static isExisty(obj) {
     return obj !== null;

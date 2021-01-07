@@ -149,7 +149,7 @@ class PageComponent extends Component {
                           wordBreak: 'break-all',
                           whiteSpace: 'pre-wrap',
                           textAlign: 'left',
-                          padding: '10px',
+                          //padding: '10px',
                           fontSize: '16px'
                         }}
                         src={confirmClose}
@@ -230,7 +230,7 @@ class PageComponent extends Component {
                     visible
                     width={item.option.width === undefined ? '520px' : item.option.width}
                     footer={null}
-                    className="modal-header"
+                    className= {item.option.classname === undefined ? 'modal-header': `${item.option.classname} modal-header`}
                     onCancel={this.close.bind(this, item.id, undefined)}
                     maskClosable={false}
                   >

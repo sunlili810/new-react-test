@@ -1,6 +1,9 @@
-import { observable } from 'mobx';
+import { observable,makeObservable } from 'mobx';
 import Ajax from 'util/ajax';
 export default class Tablestore3 {
+    constructor() {
+    makeObservable(this);
+  }
   @observable dataObj = {
     list: [],
     last: [],

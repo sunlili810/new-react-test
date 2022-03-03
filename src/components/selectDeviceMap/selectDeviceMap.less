@@ -5,6 +5,7 @@
   position: fixed;
   left:0;
   top:0;
+  max-height: 750px;
   z-index: 999999;
   .closeIcon{
     font-size: 30px;
@@ -22,7 +23,10 @@
     border-radius: 5px;
     padding:10px;
     .search-tit{
-      font-size: 16px;
+      font-size: 15px;
+    }
+    .lonlatTxt{
+      margin:10px 0 5px 0;
     }
   }
   .amap-info>div{
@@ -60,5 +64,13 @@
   left: 352px;
   padding: 0 5px;
   height: 30px;
+}
+.modalTwo{
+  .ant-modal-close{
+    z-index: 99999999;
+    .ant-modal-close-x{
+      font-size: 20px;
+    }
+  }
 }
 

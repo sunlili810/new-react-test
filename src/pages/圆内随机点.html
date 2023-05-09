@@ -1,0 +1,134 @@
+可以使用HTML5的canvas标签和JavaScript来实现该问题。
+
+首先，在HTML文件中添加一个canvas元素和一个JavaScript脚本。canvas元素用于绘制图形，而JavaScript脚本用于处理数据和绘制图形。
+
+html
+<canvas id="myCanvas"></canvas>
+<script src="script.js"></script>
+然后，在JavaScript文件中，定义一个函数用于绘制圆和散点。该函数接受三个参数：画布的上下文对象、圆心的坐标、以及散点数据的数组。
+
+javascript
+function drawCircleAndPoints(ctx, center, points) {
+  // 绘制圆 
+  let radius = points.length * 5; // 计算圆的半径，使之与散点数量相关 
+  ctx.beginPath();
+  ctx.arc(center.x, center.y, radius, 0, 2 * Math.PI);
+  ctx.stroke();
+  // 绘制散点 
+  let randomOffsets = generateRandomOffsets(points.length, radius); // 计算散点位置 
+  for (let i = 0; i < points.length; i++) {
+    let point = {
+      x: center.x + randomOffsets[i].x,
+      y: center.y + randomOffsets[i].y 
+    };
+    ctx.beginPath();
+    ctx.arc(point.x, point.y, 2, 0, 2 * Math.PI);
+    ctx.fill();
+  }
+}
+在函数体内，先根据散点数量计算圆的半径，然后用ctx.arc()方法绘制圆。
+
+接下来，定义一个辅助函数generateRandomOffsets()，用于生成散点的随机偏移值。偏移值是一个以圆心为原点的平面坐标，表示该点相对于圆心的偏移量。
+
+javascript
+function generateRandomOffsets(count, radius) {
+  let offsets = [];
+  for (let i = 0; i < count; i++) {
+    let angle = Math.random() * Math.PI * 2; // 随机生成一个角度 
+    let distance = Math.random() * radius; // 随机生成一个距离（半径内）
+    let offset = {
+      x: Math.cos(angle) * distance,
+      y: Math.sin(angle) * distance 
+    };
+    let overlap = false;
+    // 判断该点是否与已有点重叠 
+    for (let j = 0; j < offsets.length; j++) {
+      let dx = offset.x - offsets[j].x;
+      let dy = offset.y - offsets[j].y;
+      let distance = Math.sqrt(dx * dx + dy * dy);
+      if (distance < 10) {
+        overlap = true;
+        break;
+      }
+    }
+    // 如果与已有点重叠，则重新生成一个偏移值 
+    if (overlap) {
+      i--;
+      continue;
+    }
+    offsets.push(offset);
+  }
+  return offsets;
+}
+该函数首先循环生成指定数量的随机偏移值。每个偏移值有一个随机角度和距离，并用三角函数计算偏移量的x和y分量。
+
+然后，循环遍历已有的偏移值，检查该偏移值是否与已有的点重叠。如果重叠，则重新生成一个偏移值。最后，将生成的偏移值数组返回。
+
+最后，在脚本文件中，获取canvas元素和画布的上下文对象，并调用drawCircleAndPoints()函数绘制图形。
+
+javascript
+let canvas = document.getElementById('myCanvas');
+let ctx = canvas.getContext('2d');
+let center = { x: canvas.width / 2, y: canvas.height / 2 }; // 圆心坐标 
+let points = [ /* 后台传过来的散点数据 */ ]; // 数组长度代表散点数量 
+drawCircleAndPoints(ctx, center, points);
+完整的代码示例：
+
+html
+<canvas id="myCanvas"></canvas>
+<script>
+function drawCircleAndPoints(ctx, center, points) {
+  // 绘制圆 
+  let radius = points.length * 5; // 计算圆的半径，使之与散点数量相关 
+  ctx.beginPath();
+  ctx.arc(center.x, center.y, radius, 0, 2 * Math.PI);
+  ctx.stroke();
+  // 绘制散点 
+  let randomOffsets = generateRandomOffsets(points.length, radius); // 计算散点位置 
+  for (let i = 0; i < points.length; i++) {
+    let point = {
+      x: center.x + randomOffsets[i].x,
+      y: center.y + randomOffsets[i].y 
+    };
+    ctx.beginPath();
+    ctx.arc(point.x, point.y, 2, 0, 2 * Math.PI);
+    ctx.fill();
+  }
+}
+
+function generateRandomOffsets(count, radius) {
+  let offsets = [];
+  for (let i = 0; i < count; i++) {
+    let angle = Math.random() * Math.PI * 2; // 随机生成一个角度 
+    let distance = Math.random() * radius; // 随机生成一个距离（半径内）
+    let offset = {
+      x: Math.cos(angle) * distance,
+      y: Math.sin(angle) * distance 
+    };
+    let overlap = false;
+    // 判断该点是否与已有点重叠 
+    for (let j = 0; j < offsets.length; j++) {
+      let dx = offset.x - offsets[j].x;
+      let dy = offset.y - offsets[j].y;
+      let distance = Math.sqrt(dx * dx + dy * dy);
+      if (distance < 10) {
+        overlap = true;
+        break;
+      }
+    }
+    // 如果与已有点重叠，则重新生成一个偏移值 
+    if (overlap) {
+      i--;
+      continue;
+    }
+    offsets.push(offset);
+  }
+  return offsets;
+}
+
+let canvas = document.getElementById('myCanvas');
+let ctx = canvas.getContext('2d');
+let center = { x: canvas.width / 2, y: canvas.height / 2 }; // 圆心坐标 
+let points = [ /* 后台传过来的散点数据 */ ]; // 数组长度代表散点数量 
+drawCircleAndPoints(ctx, center, points);
+</script>

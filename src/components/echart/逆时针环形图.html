@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en" style="overflow: hidden">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="transparent" content="true" />
+    <meta id="i18n_pagename" content="index-common" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="../../css/common.css" type="text/css" rel="stylesheet" />
+    <script src="../../lib/jquery-1.9.0.min.js"></script>
+    <script src="../../lib/echarts.min.5.js"></script>
+    <script src="../../js/common.js"></script>
+    <script src="../../js/httprequest.js"></script>
+    <script src="../../lib/i18n/jquery.i18n.properties.min.js"></script>
+    <script src="../../lib/i18n/language.js"></script>
+    <style>
+      .page {
+        width: 1388px;
+        height: 680px;
+        background-image: url(../../images/bj.png);
+        background-repeat: no-repeat;
+      }
+
+      .page .content {
+        display: flex;
+        flex-direction: row;
+        gap: 70px;
+        .left {
+          flex: 1;
+        }
+        .middleLine {
+          width: 2px;
+          height: 441px;
+          background: linear-gradient(
+            180deg,
+            rgba(0, 255, 255, 0) 0%,
+            rgba(0, 255, 255, 0.88) 47%,
+            rgba(0, 255, 255, 0) 100%
+          );
+        }
+        .right {
+          flex: 1;
+        }
+      }
+
+      #chart {
+        margin-top: 30px;
+        margin-left: 40px;
+        height: 500px;
+        width: 1382px;
+      }
+
+      .tuli {
+        position: absolute;
+        top: 134px;
+        left: 310px;
+        display: flex;
+        flex-direction: row;
+        gap: 56px;
+      }
+
+      .tuli .item {
+        font-size: 30px;
+        font-family: Montserrat-Regular, Montserrat;
+        font-weight: 400;
+        color: #ffffff;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .page .title {
+        justify-content: space-around;
+      }
+
+      .page .title:after {
+        position: absolute;
+        left: -100%;
+        top: 0;
+        width: 30%;
+        height: 108px;
+        content: "";
+        background: linear-gradient(
+          to right,
+          rgba(255, 255, 255, 0) 0,
+          rgba(8, 78, 111, 0.3) 50%,
+          rgba(255, 255, 255, 0) 100%
+        );
+        transform: skewX(-0deg);
+        animation: scan 3s linear infinite;
+        /* 使用动画 */
+      }
+
+      @keyframes scan {
+        0% {
+          left: -100%;
+        }
+
+        100% {
+          left: 100%;
+          /* 注意这里改成了正值 */
+        }
+      }
+
+      .picbox {
+        background-image: url(../../images/tmp.png);
+        background-repeat: no-repeat;
+        width: 245px;
+        height: 245px;
+      }
+
+      .num {
+        font-family: Montserrat-Regular, Montserrat;
+        font-weight: 400;
+        color: #01ffff;
+        font-size: 76px;
+      }
+
+      .desc {
+        font-family: Montserrat-Regular, Montserrat;
+        font-weight: 400;
+        color: #ffffff;
+        font-size: 26px;
+        max-width: 180px;
+      }
+      .chartPolar {
+        width: 450px;
+        height: 450px;
+        margin-top: 20px;
+      }
+      .content {
+      }
+      .left,
+      .right {
+        display: flex;
+        align-items: center; /* 垂直居中 */
+        /* 假设你想要容器占据整个视口的高度 */
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="page">
+      <div class="title">
+        <span class="i18n" name="safety">TRP TOP5</span>
+
+        <span class="i18n" name="chanxian">TLR TOP5</span>
+      </div>
+      <div class="content">
+        <div class="left">
+          <div class="chartPolar" id="chartL"></div>
+        </div>
+        <div class="middleLine"></div>
+        <div class="right">
+          <div class="chartPolar" id="chartR"></div>
+        </div>
+      </div>
+    </div>
+    <script>
+      var myChart = echarts.init(document.getElementById("chartL"));
+      var myChartR = echarts.init(document.getElementById("chartR"));
+      let color = ["#1BCBCB", "#82E600", "#F7BA1E", "#FF7D00", "#F53F3F"];
+      let data = [
+        { name: "TOP1 Breakdown", value: 120 },
+        { name: "TOP2 Mico-Stop", value: 120 },
+        { name: "TOP3 O-Loss", value: 60 },
+        { name: "TOP4 Change over", value: 30 },
+        { name: "TOP5 Q-Loss", value: 20 },
+      ];
+      data = data.reverse();
+      let max = Math.max(...data.map((item) => item.value));
+      let sum = eval(data.map((item) => item.value).join("+"));
+      option = {
+        angleAxis: {
+          show: 0,
+          clockwise: false,
+          max: max + max / 3,
+        },
+        radiusAxis: {
+          type: "category",
+          // data: data.map((item) => {
+          //   return (
+          //     item.name +
+          //     ":" +
+          //     "(" +
+          //     ((item.value / sum) * 100).toFixed(1) +
+          //     "%)"
+          //   );
+          // }),
+          data: data.map((item) => {
+            return item.name;
+          }),
+
+          z: 10,
+          axisLine: {
+            show: false,
+          },
+          axisTick: {
+            show: false,
+          },
+          axisLabel: {
+            show: true,
+            margin: -20,
+
+            align: "left",
+            color: function (value, index) {
+              return color[index] || "#FFF";
+            },
+            formatter: function (name, index) {
+              console.log(index);
+
+              return (
+                "{x|" +
+                name +
+                "}  {b|" +
+                "            " +
+                "}  {a|" +
+                ((data[index].value / sum) * 100).toFixed(1) +
+                "%}"
+              );
+            },
+            interval: 0,
+            rich: {
+              a: {
+                color: "#fff",
+                fontSize: 14,
+                fontWeight: 400,
+                lineHeight: 22,
+              },
+              b: {
+                color: "rgba(255, 255, 255, 0.5)",
+                fontSize: 14,
+                fontWeight: 400,
+                lineHeight: 22,
+              },
+              x: {
+                width: 80,
+                fontSize: 14,
+                fontWeight: 800,
+                lineHeight: 22,
+              },
+            },
+          },
+        },
+        polar: {
+          show: 0,
+          center: ["50%", "50%"],
+        },
+        series: [
+          {
+            type: "bar",
+            data: data.map((item, index) => {
+              return {
+                value: item.value,
+                name: item.name,
+                itemStyle: {
+                  color: color[index],
+                },
+              };
+            }),
+            label: {
+              show: false,
+              position: "top",
+            },
+            barWidth: 20,
+            //roundCap: true,
+            coordinateSystem: "polar",
+          },
+        ],
+      };
+
+      myChart.setOption(option);
+      myChartR.setOption(option);
+
+      var activity = "";
+      $(function () {
+        activity = getQueryString("activity");
+        getData();
+      });
+      function getData() {
+        let time = new Date();
+        let year = time.getFullYear();
+        let url =
+          baseUrl +
+          "api/DigitalTwin/Getcapso?year=" +
+          year +
+          "&activity=" +
+          activity;
+        request.AjaxGetAsync(url, null, function (result) {});
+      }
+
+      function changeLanguage(lan) {
+        i18nLanguage = lan;
+        execI18n();
+      }
+    </script>
+  </body>
+</html>

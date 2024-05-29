@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en" style="overflow: hidden;">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="transparent" content="true">
+    <meta id="i18n_pagename" content="index-common">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="../../css/common.css" type="text/css" rel="stylesheet">
+    <script src="../../lib/jquery-1.9.0.min.js"></script>
+    <script src="../../lib/echarts.min.5.js"></script>
+    <script src="../../js/common.js"></script>
+    <script src="../../js/httprequest.js"></script>
+    <script src="../../lib/i18n/jquery.i18n.properties.min.js"></script>
+    <script src="../../lib/i18n/language.js"></script>
+    <style>
+        .page {
+            width: 1388px;
+            height: 680px;
+            background-image: url(../../images/bj.png);
+            background-repeat: no-repeat;
+        }
+
+
+        .page .content {
+            display: flex;
+            flex-direction: row;
+            gap: 70px;
+        }
+
+        #chart {
+            margin-top: 30px;
+            margin-left: 40px;
+            height: 500px;
+            width: 1382px;
+        }
+
+        .tuli {
+            position: absolute;
+            top: 134px;
+            left: 310px;
+            display: flex;
+            flex-direction: row;
+            gap: 56px
+        }
+
+        .tuli .item {
+            font-size: 30px;
+            font-family: Montserrat-Regular, Montserrat;
+            font-weight: 400;
+            color: #FFFFFF;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tuli .item .rec {
+            width: 32px;
+            height: 9px;
+            background-color: #41E2EC;
+        }
+
+        .tuli .item .arrow {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+        }
+
+        .tuli .item .arrow .start {
+            width: 14px;
+            height: 14px;
+            border-radius: 7px;
+            background: #41E2EC;
+        }
+
+        .tuli .item .arrow .line {
+            width: 43px;
+            height: 0px;
+            border: 1px dashed #41E2EC;
+        }
+
+        .tuli .item .arrow .end {
+            width: 0;
+            height: 0;
+            border-left: 14px solid cyan;
+            border-top: 7px solid transparent;
+            border-bottom: 7px solid transparent;
+        }
+
+        .page .title:after {
+            position: absolute;
+            left: -100%;
+            top: 0;
+            width: 30%;
+            height: 108px;
+            content: "";
+            background: linear-gradient(to right, rgba(255, 255, 255, 0) 0, rgba(8, 78, 111, 0.3) 50%, rgba(255, 255, 255, 0) 100%);
+            transform: skewX(-0deg);
+            animation: scan 3s linear infinite;
+            /* 使用动画 */
+        }
+
+        @keyframes scan {
+            0% {
+                left: -100%;
+            }
+
+            100% {
+                left: 100%;
+                /* 注意这里改成了正值 */
+            }
+        }
+        .page .title{
+            font-family: 'YouSheBiaoTiHei';
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page">
+        <div class="title">
+            <span class="i18n" name="chanxian">Quality Issues TOP5</span>
+        </div>
+        <div class="content">
+            <div id="chart"></div>
+
+        </div>
+        <div class="tuli">
+
+    </div>
+    <script>
+        var activity = "";
+        $(function () {
+            activity = getQueryString("activity");
+            getData()
+        })
+        function getData() {
+            let time = new Date()
+            let year = time.getFullYear()
+            let url = baseUrl + "api/DigitalTwin/Getcapso?year=" + year + "&activity=" + activity;
+            request.AjaxGetAsync(url, null, function (result) {
+                var xdata = []
+                var data1 = []
+                var data2 = []
+                var data1_target = []
+                var data2_target = []
+                let t1 = 0;
+                let t2 = 0;
+                if (result.status == 200) {
+                    let array = result.response;
+                    let data = [];
+
+                    for (let index = 0; index < array.length; index++) {
+                        let element = array[index];
+
+                        xdata.push(year + '/' + formatNumber(element.month))
+                        data1.push(element.water_quantity == 0 ? null : element.water_quantity)
+                        data2.push(element.electric_quantity == 0 ? null : element.electric_quantity)
+                        data1_target.push(element.water_target)
+                        data2_target.push(element.electric_target)
+                        t1 = element.water_target
+                        t2 = element.electric_target
+                    }
+                }
+                drawline(xdata, data1, data2, data1_target, data2_target, t1, t2)
+            })
+        }
+
+        function drawline(xData, seriesData1, seriesData2, seriesData1_target, seriesData2_target, t1, t2) {
+            let max1 = seriesData1.max()
+            let min1 = seriesData1.min()
+            let max2 = seriesData2.max()
+            let min2 = seriesData2.min()
+            let chartDom = document.getElementById("chart");
+            let myChartsd = echarts.init(chartDom);
+            var data = [70, 34, 60, 78, 69]
+            let total=0;
+            data.map((item)=>{
+                total+=item;
+            });
+           
+            var titlename = ['c001缺元件', 'C002偏位', 'TRE反方向', 'R001少锡', 'I001翘脚'];
+            var valdata =  data.map((item)=>{
+                    return `${(item/total*100).toFixed(1)}%`;
+                });//['70%', '34%', '60%', '78%', '69%']
+            var myColor = ['#EF4F5A', '#FA8B34', '#F8BC3B', '#3864FA', '#33DFE8'];
+            var myColor2=[
+                new echarts.graphic.LinearGradient(  
+                    0, 0, 1, 0,   
+                    [  
+                        {offset: 0, color: '#EC405A'},   
+                        {offset: 1, color: '#FE995A'}   
+                    ]  
+                ),  
+                new echarts.graphic.LinearGradient(  
+                    0, 0, 1, 0,   
+                    [  
+                        {offset: 0, color: '#FA8632'},   
+                        {offset: 1, color: '#FFCE4B'}   
+                    ]  
+                ),
+                new echarts.graphic.LinearGradient(  
+                    0, 0, 1, 0,   
+                    [  
+                        {offset: 0, color: '#F7B935'},   
+                        {offset: 1, color: '#FFEC93'}   
+                    ]  
+                ),
+                new echarts.graphic.LinearGradient(  
+                    0, 0, 1, 0,  
+                    [  
+                        {offset: 0, color: '#3960FC'},  
+                        {offset: 1, color: '#2FC4D1'}  
+                    ]  
+                ),
+                new echarts.graphic.LinearGradient(  
+                    0, 0, 1, 0, 
+                    [  
+                        {offset: 0, color: '#2DDCE5'},   
+                        {offset: 1, color: '#5FF6FE'}   
+                    ]  
+                ),
+            ]
+            option = {
+                //backgroundColor: '#0e2147',
+                grid: [
+                                {x: '25%', y: '7%', width: '40%', height: '60%'},
+                            ],
+                xAxis: {
+                    show: false
+                },
+                yAxis: [{
+                    show: true,
+                    data: titlename,
+                    inverse: true,
+                    axisLine: {
+                        show: false
+                    },
+                    splitLine: {
+                        show: false
+                    },
+                    axisTick: {
+                        show: false
+                    },
+                    axisLabel: {
+                        align: 'left',
+                        color: function (value, index) {
+                                        return myColor[index] || "#FFF";
+                                        },
+                    margin: 160,
+                        formatter: function(value, index) {
+                            return [
+                                '{lg|' +'Top'+ (index + 1) + '}' +'{title|' + "        " + '} '+ '{lv|' + value + '} '
+                            ].join('\n')
+                        },
+                        rich: {
+                            lg: {
+                            
+                                // color: function (value, index) {
+                                //         return myColor[index] || "#FFF";
+                                //         },
+                                borderRadius: 15,
+                                // padding: 5,
+                                align: 'center',
+                                width: 15,
+                                height: 15,
+                                fontSize:18,
+                                fontFamily:'YouSheBiaoTiHei'
+                            
+                            
+                            },
+                            lv: {
+                                color:'#fff',
+                                fontSize:16,
+                                fontFamily:'YouSheBiaoTiHei'
+                            },
+                        }
+                    },
+
+
+                }, {
+                    show: true,
+                    inverse: true,
+                    data: valdata,
+                    axisLabel: {
+                        show:true,
+                        textStyle: {
+                            fontSize: 14,
+                            color: '#fff',
+                            fontFamily:'YouSheBiaoTiHei'
+                        },
+                    },
+                    axisLine: {
+                        show: false
+                    },
+                    splitLine: {
+                        show: false
+                    },
+                    axisTick: {
+                        show: false
+                    },
+
+                }],
+                series: [{
+                    name: '条',
+                    type: 'bar',
+                    yAxisIndex: 0,
+                    data: data,
+                    barWidth: 20,
+                    itemStyle: {
+                        normal: {
+                            barBorderRadius: 30,
+                            color: function(params) {
+                                var num = myColor2.length;
+                                return myColor2[params.dataIndex % num]
+                            },
+                        }
+                    },
+                    label: {
+                        normal: {
+                            show: false,
+                            position: 'inside',
+                            formatter: '{c}%'
+                        }
+                    },
+                }]
+            };
+            myChartsd.setOption(option);
+        }
+
+        function changeLanguage(lan) {
+            i18nLanguage = lan
+            execI18n();
+
+        }
+    </script>
+</body>

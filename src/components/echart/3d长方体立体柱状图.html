@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en" style="overflow: hidden">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="transparent" content="true" />
+    <meta id="i18n_pagename" content="index-common" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="../../css/common.css" type="text/css" rel="stylesheet" />
+    <script src="../../lib/jquery-1.9.0.min.js"></script>
+    <script src="../../lib/echarts.min.5.js"></script>
+    <script src="../../js/common.js"></script>
+    <script src="../../js/httprequest.js"></script>
+    <script src="../../lib/i18n/jquery.i18n.properties.min.js"></script>
+    <script src="../../lib/i18n/language.js"></script>
+    <style>
+      .page {
+        width: 1388px;
+        height: 680px;
+        background-image: url(../../images/bj.png);
+        background-repeat: no-repeat;
+      }
+
+      .page .content {
+        display: flex;
+        flex-direction: row;
+        gap: 70px;
+      }
+
+      #chart {
+        margin-top: 30px;
+        margin-left: 40px;
+        height: 500px;
+        width: 1382px;
+      }
+
+      .tuli {
+        position: absolute;
+        top: 134px;
+        left: 310px;
+        display: flex;
+        flex-direction: row;
+        gap: 56px;
+      }
+
+      .tuli .item {
+        font-size: 30px;
+        font-family: Montserrat-Regular, Montserrat;
+        font-weight: 400;
+        color: #ffffff;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .tuli .item .rec {
+        width: 32px;
+        height: 9px;
+        background-color: #41e2ec;
+      }
+
+      .tuli .item .arrow {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+      }
+
+      .tuli .item .arrow .start {
+        width: 14px;
+        height: 14px;
+        border-radius: 7px;
+        background: #41e2ec;
+      }
+
+      .tuli .item .arrow .line {
+        width: 43px;
+        height: 0px;
+        border: 1px dashed #41e2ec;
+      }
+
+      .tuli .item .arrow .end {
+        width: 0;
+        height: 0;
+        border-left: 14px solid cyan;
+        border-top: 7px solid transparent;
+        border-bottom: 7px solid transparent;
+      }
+
+      .page .title:after {
+        position: absolute;
+        left: -100%;
+        top: 0;
+        width: 30%;
+        height: 108px;
+        content: "";
+        background: linear-gradient(
+          to right,
+          rgba(255, 255, 255, 0) 0,
+          rgba(8, 78, 111, 0.3) 50%,
+          rgba(255, 255, 255, 0) 100%
+        );
+        transform: skewX(-0deg);
+        animation: scan 3s linear infinite;
+        /* 使用动画 */
+      }
+
+      @keyframes scan {
+        0% {
+          left: -100%;
+        }
+
+        100% {
+          left: 100%;
+          /* 注意这里改成了正值 */
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="page">
+      <div class="title">
+        <span class="i18n" name="SALES">SALES</span>
+      </div>
+      <div class="content">
+        <div id="chart"></div>
+      </div>
+    </div>
+    <script>
+      const itemParamsObj = {
+        Apu: "SMT",
+        Plant_Level: "部门", //产线 车间 部门
+        Line: "", //产线
+        Type: "Day", //Day、Week、Month
+        Start: "2024-03-19",
+        End: "2024-03-25",
+        StartDay: "",
+        EndDay: "",
+        _t: Date.parse(new Date()) / 1000,
+      };
+
+      $(function () {
+        init();
+        getData();
+      });
+
+      function init() {
+        itemParamsObj.Type = getQueryString("type") || "Day";
+        itemParamsObj.Start = getQueryString("start") || "";
+        itemParamsObj.End = getQueryString("end") || "";
+      }
+
+      function getData() {
+        let url = baseUrl + "/DashBoard/SmtDashBorad/GetSMTActivitySales";
+        request.AjaxPostAsync(url, JSON.stringify(itemParamsObj), function (res) {
+          if (res.status == 200) {
+            let item = res.response || {};
+            let chartData = item.chatData || {};
+            let xData = chartData.xData || [];
+            let yData = chartData.yData || [];
+
+            drawline(xData, yData);
+          }
+        });
+      }
+
+      function drawline(xData, yData) {
+        let chartDom = document.getElementById("chart");
+        let myChartsd = echarts.init(chartDom);
+        // 指定图表的配置项和数据
+        var option = {
+          tooltip: {
+            trigger: "item",
+          },
+          grid: {
+            top: "15%",
+            left: "4%",
+            right: "8%",
+            bottom: "4%",
+            containLabel: true,
+          },
+          xAxis: {
+            data: xData,
+            splitLine: {
+              show: false,
+            },
+            axisTick: {
+              show: false,
+            },
+            axisLine: {
+              symbol: ["none"],
+              symbolSize: [10, 17],
+              lineStyle: {
+                color: "#FFF",
+                width: 1, //  改变坐标线的颜色
+              },
+            },
+            offset: 8,
+            axisLabel: {
+              //调整x轴的lable
+              textStyle: {
+                fontSize: 26,
+                color: "#ffffff",
+                fontFamily: "Montserrat-Regular, Montserrat",
+              },
+            },
+          },
+          yAxis: {
+            nameTextStyle: {
+              color: "#FFFFFF",
+              fontSize: 24,
+              fontWeight: 400,
+              fontFamily: "Montserrat-Regular, Montserrat",
+            },
+            // type: "value",
+            // name:'时长（小时）',
+            splitLine: {
+              //刻度线
+              show: true,
+              lineStyle: {
+                type: "dashed",
+              },
+            },
+            splitArea: {
+              //柱状图后面的背景色
+              show: false,
+              // areaStyle: {
+              //   color: ["rgba(221,247,250,0.7)","rgba(245,249,232,0.7)"]
+              // }
+            },
+            axisTick: {
+              show: false,
+            },
+            axisLabel: {
+              //调整x轴的lable
+              textStyle: {
+                fontSize: 26,
+                color: "#ffffff",
+                fontFamily: "Montserrat-Regular, Montserrat",
+              },
+              formatter: `{value} M`,
+            },
+            axisLine: {
+              symbol: ["none"],
+              symbolSize: [15, 17],
+              lineStyle: {
+                color: "rgba(0 0 0 0)",
+                width: 0, //  改变坐标线的颜色
+              },
+            },
+          },
+          axisPointer: {
+            show: false,
+            link: { xAxisIndex: "all" },
+            type: "shadow",
+            label: {
+              backgroundColor: "#777",
+            },
+          },
+          series: [
+            {
+              name: "",
+              type: "bar",
+              showSymbol: false,
+              hoverAnimation: false,
+              data: yData,
+              barWidth: 20, //柱图宽度
+              // barCategoryGap:'60%',
+              itemStyle: {
+                //左面
+                normal: {
+                  color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                    { offset: 0, color: "#01ABC1" },
+                    { offset: 1, color: "rgba(255, 255, 255, 0.1)" },
+                  ]),
+                  barBorderRadius: [4, 0, 0, 100],
+                },
+              },
+            },
+            {
+              name: "",
+              tooltip: {
+                show: true,
+              },
+              type: "bar",
+              barWidth: 20,
+              // barCategoryGap:'60%',
+              itemStyle: {
+                //右面
+                normal: {
+                  color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                    { offset: 0, color: "#03679A" },
+                    { offset: 1, color: "rgba(255, 255, 255, 0)" },
+                  ]),
+                  borderWidth: 0.1,
+                  barBorderRadius: [0, 5, 100, 0],
+                },
+              },
+              data: yData,
+              barGap: 0,
+            },
+            {
+              name: "",
+              tooltip: {
+                show: false,
+              },
+              type: "pictorialBar",
+              itemStyle: {
+                //顶部
+                normal: {
+                  color: "rgba(4,213,244, 1)",
+                  borderColor: "#000",
+                  borderWidth: 0.1,
+                  label: {
+                    show: true, //开启显示
+                    position: "top", //在上方显示
+                    textStyle: {
+                      //数值样式
+                      color: "#FFFFFF",
+                      fontSize: 14,
+                      fontFamily: "微软雅黑",
+                    },
+                    offset: [0, -2],
+                  },
+                },
+              },
+              symbol: "diamond",
+              symbolSize: ["40.5", "23"],
+              symbolOffset: [0, "-38%"],
+              symbolPosition: "end",
+              data: yData,
+              z: 3,
+            },
+            {
+              name: "",
+              tooltip: {
+                show: false,
+              },
+              type: "pictorialBar",
+              itemStyle: {
+                //底部
+                normal: {
+                  color: "rgba(4,213,244, 0.5)",
+                  borderColor: "#000",
+                  borderWidth: 0.1,
+                  label: {
+                    show: false, //开启显示
+                    position: "top", //在上方显示
+                    textStyle: {
+                      //数值样式
+                      color: "#FFFFFF",
+                      fontSize: 14,
+                      fontFamily: "微软雅黑",
+                    },
+                    offset: [0, -2],
+                  },
+                },
+              },
+              symbol: "diamond",
+              symbolSize: ["41.5", "32"],
+              symbolOffset: [0, "3"],
+              symbolPosition: "start",
+              data: yData,
+              z: 0,
+            },
+          ],
+        };
+
+        myChartsd.setOption(option);
+      }
+
+      function changeLanguage(lan) {
+        i18nLanguage = lan;
+        execI18n();
+      }
+    </script>
+  </body>
+</html>

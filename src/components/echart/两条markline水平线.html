@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en" style="overflow: hidden;">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="transparent" content="true">
+    <meta id="i18n_pagename" content="index-common">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="../../css/common.css" type="text/css" rel="stylesheet">
+    <script src="../../lib/jquery-1.9.0.min.js"></script>
+    <script src="../../lib/echarts.min.5.js"></script>
+    <script src="../../js/common.js"></script>
+    <script src="../../js/httprequest.js"></script>
+    <script src="../../lib/i18n/jquery.i18n.properties.min.js"></script>
+    <script src="../../lib/i18n/language.js"></script>
+    <style>
+        .page {
+            width: 1388px;
+            height: 680px;
+            background-image: url(../../images/bj.png);
+            background-repeat: no-repeat;
+        }
+
+
+        .page .content {
+            display: flex;
+            flex-direction: row;
+            gap: 70px;
+        }
+
+        #chart {
+            margin-top: 30px;
+            margin-left: 40px;
+            height: 500px;
+            width: 1382px;
+        }
+
+        .tuli {
+            position: absolute;
+            top: 134px;
+            left: 160px;
+            display: flex;
+            flex-direction: row;
+            gap: 56px
+        }
+
+        .tuli .item {
+            font-size: 27px;
+            font-family: Montserrat-Regular, Montserrat;
+            font-weight: 400;
+            color: #FFFFFF;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tuli .item .rec {
+            width: 32px;
+            height: 9px;
+            background-color: #41E2EC;
+        }
+
+        .tuli .item .arrow {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+        }
+
+        .tuli .item .arrow .start {
+            width: 14px;
+            height: 14px;
+            border-radius: 7px;
+            background: #41E2EC;
+        }
+
+        .tuli .item .arrow .line {
+            width: 43px;
+            height: 0px;
+            border: 1px dashed #41E2EC;
+        }
+
+        .tuli .item .arrow .end {
+            width: 0;
+            height: 0;
+            border-left: 14px solid cyan;
+            border-top: 7px solid transparent;
+            border-bottom: 7px solid transparent;
+        }
+
+        .page .title:after {
+            position: absolute;
+            left: -100%;
+            top: 0;
+            width: 30%;
+            height: 108px;
+            content: "";
+            background: linear-gradient(to right, rgba(255, 255, 255, 0) 0, rgba(8, 78, 111, 0.3) 50%, rgba(255, 255, 255, 0) 100%);
+            transform: skewX(-0deg);
+            animation: scan 3s linear infinite;
+            /* 使用动画 */
+        }
+
+        .page .title {
+            font-family: "YouSheBiaoTiHei";
+        }
+
+        @keyframes scan {
+            0% {
+                left: -100%;
+            }
+
+            100% {
+                left: 100%;
+                /* 注意这里改成了正值 */
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page">
+        <div class="title">
+            <span class="i18n" name="chanxian">Line Balance Rate</span>
+        </div>
+        <div class="content">
+            <div id="chart"></div>
+
+        </div>
+        <div class="tuli">
+            <div class="item">
+                <div class="rec" style="background-color: #2CC880;"></div>
+                <div><span class="i18n" name="shui">Above Target</span></div>
+            </div>
+            <div class="item">
+                <div class="rec" style="background-color: #ED412E;"></div>
+                <div><span class="i18n" name="dian">Below Target</span></div>
+            </div>
+            <div class="item">
+                <div class="arrow">
+                    <div class="start" style="background-color: #9EEEFF;"></div>
+                    <div class="line" style="border: 1px dashed #9EEEFF;"></div>
+                    <div class="end" style="border-left: 14px solid #9EEEFF"></div>
+                </div>
+                <div>Production Target</div>
+            </div>
+
+            <div class="item">
+                <div class="arrow">
+                    <div class="start" style="background-color: #fff;"></div>
+                    <div class="line" style="border: 1px dashed #fff;"></div>
+                    <div class="end" style="border-left: 14px solid #fff"></div>
+                </div>
+                <div> Activity Target</div>
+            </div>
+        </div>
+    </div>
+    <script>
+        var activity = "";
+        $(function () {
+            activity = getQueryString("activity");
+            getData()
+        })
+        function getData() {
+            let time = new Date()
+            let year = time.getFullYear()
+            let url = baseUrl + "api/DigitalTwin/Getcapso?year=" + year + "&activity=" + activity;
+            request.AjaxGetAsync(url, null, function (result) {
+                var xdata = []
+                var data1 = []
+                var data2 = []
+                var data1_target = []
+                var data2_target = []
+                let t1 = 0;
+                let t2 = 0;
+                if (result.status == 200) {
+                    let array = result.response;
+                    let data = [];
+
+                    for (let index = 0; index < array.length; index++) {
+                        let element = array[index];
+
+                        xdata.push(year + '/' + formatNumber(element.month))
+                        data1.push(element.water_quantity == 0 ? null : element.water_quantity)
+                        data2.push(element.electric_quantity == 0 ? null : element.electric_quantity)
+                        data1_target.push(element.water_target)
+                        data2_target.push(element.electric_target)
+                        t1 = element.water_target
+                        t2 = element.electric_target
+                    }
+                }
+                drawline(xdata, data1, data2, data1_target, data2_target, t1, t2)
+            })
+        }
+
+        function drawline(xData, seriesData1, seriesData2, seriesData1_target, seriesData2_target, t1, t2) {
+            let max1 = seriesData1.max()
+            let min1 = seriesData1.min()
+            let max2 = seriesData2.max()
+            let min2 = seriesData2.min()
+            let chartDom = document.getElementById("chart");
+            let myChartsd = echarts.init(chartDom);
+            let option = {
+                tooltip: {
+                    trigger: "axis",
+                    backgroundColor: "rgba(0,0,0,.6)",
+                    borderColor: "rgba(147, 235, 248, .8)",
+                    textStyle: {
+                        color: "#FFF",
+                    },
+                    formatter: '{b0}<br />' + getI18nValue('shui') + ': {c0} t<br />' + getI18nValue('shui') + '_Target: {c1} t<br />' + getI18nValue('dian') + ': {c2} kW·h<br />' + getI18nValue('dian') + '_Target: {c3} kW·h'
+                },
+
+                grid: {
+                    left: "5%",
+                    right: "5%",
+                    bottom: "5%",
+                    top: "10%",
+                    containLabel: true,
+                },
+                xAxis: {
+                    type: "category",
+                    axisLine: {
+                        lineStyle: {
+                            color: "#ffffff",
+                            fontSize: 12,
+
+                        },
+                    },
+                    splitLine: {
+                        show: false,
+                    },
+                    axisLabel: {
+                        interval: 0,
+                        color: "#ffffff",
+                        fontSize: 26,
+                        rotate: 30,
+                        fontFamily: "Montserrat-Regular, Montserrat"
+                    },
+                    axisTick: {
+                        show: false,
+                    },
+                    data: xData, // ["05/01", "05/02", "05/03", "05/04"],
+                },
+                yAxis: [{
+                    nameTextStyle: {
+                        color: '#FFFFFF',
+                        fontSize: 24,
+                        fontWeight: 400,
+                        fontFamily: 'Montserrat-Regular, Montserrat'
+                    },
+                    //interval: (max1 - min1) / 5,
+                    type: "value",
+                    min: 0,
+                    splitNumber: 5,
+
+                    splitLine: {
+                        lineStyle: {
+                            type: "dashed",
+                            color: "rgba(255,255,255,0.1)",
+                            width: 1
+                        },
+                    },
+                    axisLine: {
+                        show: false
+
+                    },
+                    axisTick: {
+                        show: false,
+                    },
+                    axisLabel: {
+                        fontSize: 26,
+                        color: "#ffffff",
+                        fontFamily: "Montserrat-Regular, Montserrat"
+                    },
+                }],
+                visualMap: {
+                    top: 50,
+                    right: 10,
+                    show: false,
+                    pieces: [
+                        {
+                            gt: 0,
+                            lte: 1600,
+                            color: '#ED412E'
+                        }
+
+                    ],
+                    outOfRange: {
+                        color: '#2CC880'
+                    }
+                },
+                series: [{
+                    name: '水',
+                    type: "line",
+                    smooth: true, // 是否曲线
+                    data: seriesData1, // 纵坐标数据
+                    lineStyle: {
+                        //color: "#41E2EC", // 设置线条颜色为蓝色
+                        width: 4
+                    },
+                    // markLine: {
+                    //     silent: true,
+                    //     lineStyle: {
+                    //         color: '#fff',
+                    //         width: 4
+                    //     },
+                    //     label: {
+                    //         color: '#fff',
+                    //         fontSize: 22
+                    //     },
+                    //     data: [
+                    //         {
+                    //             yAxis: 1600
+                    //         },
+
+                    //     ]
+                    // },
+                    markLine: {
+                        silent: true, // 标记线是否响应和触发鼠标事件，默认为false，即响应和触发  
+                        data: [
+                            // 第一条标记线  
+                            { yAxis: 1600, name: ' Activity Target',lineStyle: { color: '#fff' } },
+                            // 第二条标记线  
+                            { yAxis: 1000, name: 'Production Target', lineStyle: { color: '#9EEEFF' } } // 可以为每条线设置不同的样式  
+                        ],
+                        label: {
+                            show: false, // 是否显示标记线的标签  
+                            position: 'end' // 标签的位置  
+                        }
+                    },
+                    areaStyle: {
+                        color: {
+                            type: "linear",
+                            x: 0, //右
+                            y: 0, //下
+                            x2: 0, //左
+                            y2: 1, //上
+                            colorStops: [{
+                                offset: 0.1,
+                                color: "#41E2EC", // 0% 处的颜色
+                            }, {
+                                offset: 1,
+                                color: "#000000", // 100% 处的颜色
+                            },],
+                        },
+                        opacity: 0.3
+                    },
+                }],
+            };
+            myChartsd.setOption(option);
+        }
+
+        function changeLanguage(lan) {
+            i18nLanguage = lan
+            execI18n();
+
+        }
+    </script>
+</body>

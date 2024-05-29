@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en" style="overflow: hidden">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="transparent" content="true" />
+    <meta id="i18n_pagename" content="index-common" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="../../css/common.css" type="text/css" rel="stylesheet" />
+    <script src="../../lib/jquery-1.9.0.min.js"></script>
+    <script src="../../lib/echarts.min.5.js"></script>
+    <script src="../../js/common.js"></script>
+    <script src="../../js/httprequest.js"></script>
+    <script src="../../lib/i18n/jquery.i18n.properties.min.js"></script>
+    <script src="../../lib/i18n/language.js"></script>
+    <style>
+      .page {
+        width: 1388px;
+        height: 680px;
+        background-image: url(../../images/bj.png);
+        background-repeat: no-repeat;
+      }
+
+      .page .content {
+        display: flex;
+        flex-direction: row;
+        gap: 70px;
+      }
+
+      #chart {
+        margin-top: 30px;
+        margin-left: 40px;
+        height: 500px;
+        width: 1382px;
+      }
+
+      .tuli {
+        position: absolute;
+        top: 134px;
+        left: 310px;
+        display: flex;
+        flex-direction: row;
+        gap: 56px;
+      }
+
+      .tuli .item {
+        font-size: 30px;
+        font-family: Montserrat-Regular, Montserrat;
+        font-weight: 400;
+        color: #ffffff;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .tuli .item .rec {
+        width: 32px;
+        height: 9px;
+        background-color: #41e2ec;
+      }
+
+      .tuli .item .arrow {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+      }
+
+      .tuli .item .arrow .start {
+        width: 14px;
+        height: 14px;
+        border-radius: 7px;
+        background: #41e2ec;
+      }
+
+      .tuli .item .arrow .line {
+        width: 43px;
+        height: 0px;
+        border: 1px dashed #41e2ec;
+      }
+
+      .tuli .item .arrow .end {
+        width: 0;
+        height: 0;
+        border-left: 14px solid cyan;
+        border-top: 7px solid transparent;
+        border-bottom: 7px solid transparent;
+      }
+
+      .page .title:after {
+        position: absolute;
+        left: -100%;
+        top: 0;
+        width: 30%;
+        height: 108px;
+        content: "";
+        background: linear-gradient(
+          to right,
+          rgba(255, 255, 255, 0) 0,
+          rgba(8, 78, 111, 0.3) 50%,
+          rgba(255, 255, 255, 0) 100%
+        );
+        transform: skewX(-0deg);
+        animation: scan 3s linear infinite;
+        /* 使用动画 */
+      }
+
+      @keyframes scan {
+        0% {
+          left: -100%;
+        }
+
+        100% {
+          left: 100%;
+          /* 注意这里改成了正值 */
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="page">
+      <div class="title">
+        <span class="i18n" name="chanxian">TNQC</span>
+      </div>
+      <div class="content">
+        <div id="chart"></div>
+      </div>
+    </div>
+    <script>
+      var activity = "";
+      $(function () {
+        activity = getQueryString("activity");
+        drawline();
+      });
+
+      function drawline() {
+        let data = [40, 62, 70, 82, 59, 38, 88];
+        let chartDom = document.getElementById("chart");
+        let myChartsd = echarts.init(chartDom);
+        // 指定图表的配置项和数据
+        var option = {
+          tooltip: {
+            trigger: "item",
+          },
+          grid: {
+            top: "15%",
+            left: "4%",
+            right: "8%",
+            bottom: "4%",
+            containLabel: true,
+          },
+          xAxis: {
+            data: [
+              "COB",
+              "SW",
+              "Depanel",
+              "Program",
+              "AICT",
+              "ICT",
+              "FCT",
+            ],
+            splitLine: {
+              show: false,
+            },
+            axisTick: {
+              show: false,
+            },
+            axisLine: {
+              symbol: ["none"],
+              symbolSize: [10, 17],
+              lineStyle: {
+                color: "#FFF",
+                width: 1, //  改变坐标线的颜色
+              },
+            },
+            offset: 8,
+            axisLabel: {
+              //调整x轴的lable
+              textStyle: {
+                fontSize: 26,
+                color: "#ffffff",
+                fontFamily: "Montserrat-Regular, Montserrat",
+              },
+            },
+          },
+          yAxis: {
+            name: "",
+            nameTextStyle: {
+              color: "#FFFFFF",
+              fontSize: 24,
+              fontWeight: 400,
+              fontFamily: "Montserrat-Regular, Montserrat",
+            },
+            // type: "value",
+            // name:'时长（小时）',
+            splitLine: {
+              //刻度线
+              show: true,
+              lineStyle: {
+                type: "dashed",
+                color: "rgba(23,35,87,0.1)", // 分割线颜色
+              },
+            },
+            splitArea: {
+              //柱状图后面的背景色
+              show: false,
+              // areaStyle: {
+              //   color: ["rgba(221,247,250,0.7)","rgba(245,249,232,0.7)"]
+              // }
+            },
+            axisTick: {
+              show: false,
+            },
+            axisLabel: {
+              //调整x轴的lable
+              textStyle: {
+                fontSize: 26,
+                color: "#ffffff",
+                fontFamily: "Montserrat-Regular, Montserrat",
+              },
+            },
+            axisLine: {
+              symbol: ["none"],
+              symbolSize: [15, 17],
+              lineStyle: {
+                color: "rgba(0 0 0 0)",
+                width: 0, //  改变坐标线的颜色
+              },
+            },
+          },
+          axisPointer: {
+            show: false,
+            link: { xAxisIndex: "all" },
+            type: "shadow",
+            label: {
+              backgroundColor: "#777",
+            },
+          },
+          series: [
+            {
+              name: "",
+              type: "bar",
+              showSymbol: false,
+              hoverAnimation: false,
+              data: data,
+              barWidth: 40, //柱图宽度
+              // barCategoryGap:'60%',
+              //   itemStyle: {
+              //     //左面
+              //     normal: {
+              //       color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+              //         { offset: 0, color: "#B59B57" },
+              //         { offset: 1, color: "rgba(0, 0, 0, 0)" },
+              //       ]),
+              //     },
+              //   },
+
+              itemStyle: {
+                normal: {
+                  color: function (params) {
+                    if (params.data < 65) {
+                      return new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                        {
+                          offset: 0,
+                          color: "#B59B57",
+                        },
+                        {
+                          offset: 1,
+                          color: "rgba(0, 0, 0, 0)",
+                        },
+                      ]);
+                    } else {
+                      return new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                        {
+                          offset: 0,
+                          color: "#0EFD7B",
+                        },
+                        {
+                          offset: 1,
+                          color: "rgba(0, 0, 0, 0)",
+                        },
+                      ]);
+                    }
+                  },
+                  opacity: 0.8,
+                },
+              },
+
+              markLine: {
+                silent: true,
+                lineStyle: {
+                  color: "#fff",
+                  width: 4,
+                },
+                label: {
+                  color: "#fff",
+                  fontSize: 22,
+                },
+                data: [
+                  {
+                    yAxis: 65,
+                  },
+                ],
+              },
+            },
+            {
+              name: "",
+              tooltip: {
+                show: false,
+              },
+              type: "pictorialBar",
+              itemStyle: {
+                //顶部
+                normal: {
+                  // color: "#FFD655",
+                  color: function (params) {
+                    if (params.data < 65) {
+                      return "#FFD655";
+                    } else {
+                      return "#0EFD7B";
+                    }
+                  },
+                  borderColor: "#000",
+                  borderWidth: 0.1,
+                  label: {
+                    show: true, //开启显示
+                    position: "top", //在上方显示
+                    textStyle: {
+                      //数值样式
+                      color: "#FFFFFF",
+                      fontSize: 14,
+                      fontFamily: "微软雅黑",
+                    },
+                    offset: [0, -2],
+                  },
+                },
+              },
+              symbol: "circle",
+              symbolSize: ["40.5", "23"],
+              symbolOffset: [0, "-38%"],
+              symbolPosition: "end",
+              data: data,
+              z: 3,
+            },
+            {
+              name: "",
+              tooltip: {
+                show: false,
+              },
+              type: "pictorialBar",
+              itemStyle: {
+                //底部
+                normal: {
+                  color: "rgba(255,214,85, 0.8)",
+                  borderColor: "#000",
+                  borderWidth: 0.1,
+                  label: {
+                    show: false, //开启显示
+                    position: "top", //在上方显示
+                    textStyle: {
+                      //数值样式
+                      color: "#FFFFFF",
+                      fontSize: 14,
+                      fontFamily: "微软雅黑",
+                    },
+                    offset: [0, -2],
+                  },
+                },
+              },
+             
+              symbol: function (params) {
+                if (params < 65) {
+                  return "image://data:image/png;base64,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";
+                } else {
+                  return "image://data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD0AAAAdCAYAAAAZzmTfAAAAAXNSR0IArs4c6QAAAARzQklUCAgICHwIZIgAAAZJSURBVFiF1VhNaFzXFf6++959M3Ii8lIaLGlRzUrWomCBIHWhrUS7MAS59jarBArJoiXWxKVdRluHhCeZFupskm5qAl3YrSkYCh0tmngjUFa1tRoRkFXcxTOSNTPvvne/LkYjjf5/PFbpt3rv/px7vnPOPffeQ7wEJJkdg1gxBhdFVSBUCMYQYlAxwHh7tFKIKQCIqoOoU6x7aRnW1apEvdf6sRdCEiGGs9dIXqUwBqLSC7ltKBVx13h8U1j3RZVIX1TiC5FOGuUKrf+I0rWd3ntZUApwttXKbv/mVayeVsqJSScNVAJrf+rFtwj97GzI7kFTxN8I3fcu+Ee1r1k/yeRjkU6EmHnpB6T/OcQfg/wupPMAzGk07hE8yKeCvqX0T5/rrivyR8eJgENJJ0KMLJok9SOSUyD72z0ChKHe6H56iPiWIAEYQSuEvgaw4F0wf5j39yXdIWsMLoL4PshxSIDQEPBnhdkfjIu+6m3COiGEep5nP7El+5Y8fyHyDRKS9DWFJVB1H7h7+yW+PaQ/aUWjlroMMhYxYoA3JaxL+JdsdqNKPAHaSSwIi88FTp4BxR0QcFe5qXa8mQiDpijNQPqhyH5CX0FYEtBUbr7c7fUdpJNGOGlCM7EpuCBwrf3NO9O29el+CiSt6FpgdP0syAuqSfhjNXJf7Nc/60o3CL3dHou/E2gAgM/9fLUvr3XGbZHeSdg/JDkE8ZcgF66HrfePUigR4sDZd73BRXpO9iT0hbqIRUn3UAS142TpuTz6C4QhUL+XtEKYS8BO4iEA3NqwlxRyortzzkUfAQCh2nH0a+8dN9v537ywVACMGXJYUAwi3iRT2Z7JFFQKISWYemkZheoo54s796M7jhogcEfADYjfm7bu86QRtkxoJkxoJm5t2OYH59zDcEYo+5wT3GUNgeuEIGHkWKvtb4RFAIunmX9aeHGIEASuA0C1L68ljRAmNBPeciIRHpnXmuElAmVQ9e64F4qFzc8riTB4loqfFr9TacQAUwBA+VqnvdqX1yClBMpBw44aYzkMAEGAR90CqjavdUI7yEt/msvs+Nmpf3IkLpz0OW4L6ge5cD1yC939HpgHgIIYDSUOEMDGc7e8W1ARuk/poiFQIyBvz7rSnVba+uy3b2DtjLgciUQYNHn0HoAram/HpVba+vXucS5zq6VSBIY8Hx4msEo8ufk0e7/8nehDeFwh9HZfXJqadbhP+dpua54l5jI7DnIKOa502gTemY72P1q7waRh3zUhh710rxq5A5POXGbHYcx7kLbCnOCaB+4LxUKW5gsvMwJuPkV/FIfjRDBOamLHNZhYEfjZdNi6f9D8JLNjhrwKqs7O+SxpdTpyt49avEOewoig/u4+CUskHpNYKuSfIMwfZ//B+kmMcfMp+l/pLw0WxvfTcATSuIR+kPvllL96+Pmq3U7AB+qd23cgVnzu55kIscmj68Dem8tRyvW9Hk1JGCE4udsAe0CsAIA81gntNIJh+3Q46hFDrFBa8jQ1Ba2FzpX4KGw5FmimYTbH7kYAoNODD865h8cRtkOwMMiiNA7hgoEfFDnyIi8xCUuE1kSzJBQLtghWflVuLZ1Uzq0Ne0mWl4FtbgdeQ6dt/uC0Cnejc8YbZ4dkzL7nvVSsG3Et8Gbt+VrrSa9yQzen7ig++MEhrcq6L3tRkzprJEJsnH0HbFd1djtxz9MyyewYycsEygDgPb5BlNX+H8jvqAMAENCU9GD3qXRgEcEU9irEyvZI1Y+qSPyv8EkrGg0DXKQw2mnzuZZRdnePVUToRtIoV4wtJrrJC2gCXFTOx8/KzdUZotlLAsfBjFB+rYkBmGjMUMOdMAY2ycLVqn0H18uPVxhslCsMdQHQWCfstyWo7p2WC2NWgyhbfRnb4ON1DBgbxYH3AwArJmy/F7YgpV5chs8WDyO7pfJJFp8Ryq9mUSUARmlwYY8BsBkJUirx3zRshKFPnUMLhds2RrltGPccZRt0yQhsjEIxw6AEKpZTH0Oe328dSKkMV+X1+LCb5H54oWL/x+sYOPeKHc4LVug10B1mvYakVRimYaD6xnO3fKbF/sMwI5TPPUdsIzuAQjGMiRmgBK+44y2R5W7PCWhSagKAL/AMAGCYwvu0MGY18FnzWRk9zR3/BT+mPvorKrhNAAAAAElFTkSuQmCC";
+                }
+              },
+              symbolSize: ["41.5", "32"],
+              symbolOffset: [0, "3"],
+              symbolPosition: "start",
+              data: data,
+              z: 0,
+            },
+          ],
+        };
+
+        myChartsd.setOption(option);
+      }
+
+      function changeLanguage(lan) {
+        i18nLanguage = lan;
+        execI18n();
+      }
+    </script>
+  </body>
+</html>
